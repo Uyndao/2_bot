@@ -4,8 +4,10 @@
 #include <iostream>
 #include <stdlib.h>
 #include "config.h"
-const long atk_score[7] = { 0,3,21,192,1535,12288,98304 };
-const long def_score[7] = { 0,1,9,81,729,6561,59049 };
+const long atk_1_score[7] = { 0,3,21,192,1535,12288,98304 };
+const long def_1_score[7] = { 0,1,9,81,729,6561,59049 };
+const long atk_2_score[7] = { 0,1,9,81,729,6561,59049 };
+const long def_2_score[7] = { 0,3,18,162,1296,10368,82944 };
 void value_row(int board_game[][WIDTH], int player_id, int m, int n, int units[]) {
 	int value_max = 0;
 	int up = 1;
@@ -232,7 +234,7 @@ void value_cross_2(int board_game[][WIDTH], int player_id, int m, int n, int uni
 	units[value_max]++;
 	board_game[m][n] = 0;
 }
-long value(int board_game[][WIDTH], int player_id, int m, int n) {
+long value_1(int board_game[][WIDTH], int player_id, int m, int n) {
 	int atk_units[9];
 	int def_units[9];
 	for (int i = 0; i < 9; i++) {
@@ -273,8 +275,54 @@ long value(int board_game[][WIDTH], int player_id, int m, int n) {
 	}
 	long v = 0;
 	for (int i = 1; i < 8; i++) {
-		v += atk_score[i - 1] * atk_units[i];
-		v += def_score[i - 1] * def_units[i];
+		v += atk_1_score[i - 1] * atk_units[i];
+		v += def_1_score[i - 1] * def_units[i];
+	}
+	return v;
+}
+long value_2(int board_game[][WIDTH], int player_id, int m, int n) {
+	int atk_units[9];
+	int def_units[9];
+	for (int i = 0; i < 9; i++) {
+		atk_units[i] = 0;
+		def_units[i] = 0;
+	}
+	value_row(board_game, player_id, m, n, atk_units);
+	value_col(board_game, player_id, m, n, atk_units);
+	value_cross_1(board_game, player_id, m, n, atk_units);
+	value_cross_2(board_game, player_id, m, n, atk_units);
+	value_row(board_game, -player_id, m, n, def_units);
+	value_col(board_game, -player_id, m, n, def_units);
+	value_cross_1(board_game, -player_id, m, n, def_units);
+	value_cross_2(board_game, -player_id, m, n, def_units);
+	if (atk_units[8] >= 1) {
+		return 10000000;
+	}
+	if (atk_units[7] >= 2) {
+		return 10000000;
+	}
+	if (atk_units[7] >= 1 && atk_units[6] >= 1) {
+		return 10000000;
+	}
+	if (def_units[8] >= 1) {
+		return 4999999;
+	}
+	if (def_units[7] >= 2) {
+		return 4999999;
+	}
+	if (def_units[7] >= 1 && def_units[6] >= 1) {
+		return 4999999;
+	}
+	if (atk_units[6] >= 2) {
+		return 2499999;
+	}
+	if (def_units[6] >= 2) {
+		return 1249999;
+	}
+	long v = 0;
+	for (int i = 1; i < 8; i++) {
+		v += atk_2_score[i - 1] * atk_units[i];
+		v += def_2_score[i - 1] * def_units[i];
 	}
 	return v;
 }
@@ -282,7 +330,7 @@ void input_winpath(int first_x, int first_y, int direction_x, int direction_y) {
 	for (int i = 0; i < 5; i++) {
 		int x = first_x + i * direction_x;
 		int y = first_y + i * direction_y;
-		win_path[i] = Point(x, y);
+		win_path[i] = Point(y, x);
 	}
 }
 Point check_win(int board_game[][WIDTH], int player_id) {
@@ -462,16 +510,28 @@ Point defend(int board_game[][WIDTH], int player_id) {
 				if (up_row == 4) {
 					if (j - 1 > -1 && j + 5 < 50) {
 						if (unit == 4 && (board_game[i][j - 1] != -player_id || board_game[i][j + 5] != -player_id)) {
+							if (board_game[x][y - 1] == -player_id) {
+								return Point(i, j + 5);
+							}
+							if (board_game[x][y + 1] == -player_id) {
+								return Point(i, j - 1);
+							}
 							return Point(x, y);
 						}
 					}
 					else if (j - 1 > -1) {
 						if (unit == 4 && board_game[i][j - 1] != -player_id) {
+							if (y + 1 == 50) {
+								return Point(i, j - 1);
+							}
 							return Point(x, y);
 						}
 					}
 					else if (j + 5 < 50) {
 						if (unit == 4 && board_game[i][j + 5] != -player_id) {
+							if (y - 1 == -1) {
+								return Point(i, j + 5);
+							}
 							return Point(x, y);
 						}
 					}
@@ -495,16 +555,26 @@ Point defend(int board_game[][WIDTH], int player_id) {
 				if (up_col == 4) {
 					if (i - 1 > -1 && i + 5 < 30) {
 						if (unit == 4 && (board_game[i - 1][j] != -player_id || board_game[i + 5][j] != -player_id)) {
+							if (board_game[x - 1][y] == -player_id) {
+								return Point(i + 5, j);
+							}
+							if (board_game[x + 1][y] == -player_id) {
+								return Point(i - 1, j);
+							}
 							return Point(x, y);
 						}
 					}
 					else if (i - 1 > -1) {
 						if (unit == 4 && board_game[i - 1][j] != -player_id) {
+							if (x + 1 == 30)
+								return Point(i - 1, j);
 							return Point(x, y);
 						}
 					}
 					else if (i + 5 < 30) {
 						if (unit == 4 && board_game[i + 5][j] != -player_id) {
+							if (x - 1 == -1)
+								return Point(i + 5, j);
 							return Point(x, y);
 						}
 					}
@@ -528,16 +598,26 @@ Point defend(int board_game[][WIDTH], int player_id) {
 				if (up_cross == 4) {
 					if (i - 1 > -1 && i + 5 < 30 && j - 1 > -1 && j + 5 < 50) {
 						if (unit == 4 && (board_game[i - 1][j - 1] != -player_id || board_game[i + 5][j + 5] != -player_id)) {
+							if (board_game[x - 1][y - 1] == -player_id) {
+								return Point(i + 5, j + 5);
+							}
+							if (board_game[x + 1][y + 1] == -player_id) {
+								return Point(i - 1, j - 1);
+							}
 							return Point(x, y);
 						}
 					}
 					else if (i - 1 > -1 && j - 1 > -1) {
 						if (unit == 4 && board_game[i - 1][j - 1] != -player_id) {
+							if (x + 1 == 30 || y + 1 == 50)
+								return Point(i - 1, j - 1);
 							return Point(x, y);
 						}
 					}
 					else if (i + 5 < 30 && j + 5 < 50) {
 						if (unit == 4 && board_game[i + 5][j + 5] != -player_id) {
+							if (x - 1 == -1 || y - 1 == -1)
+								return Point(i + 5, j + 5);
 							return Point(x, y);
 						}
 					}
@@ -561,16 +641,26 @@ Point defend(int board_game[][WIDTH], int player_id) {
 				if (up_cross == 4) {
 					if (i + 1 < 30 && i - 5 > -1 && j - 1 > -1 && j + 5 < 50) {
 						if (unit == 4 && (board_game[i + 1][j - 1] != -player_id || board_game[i - 5][j + 5] != -player_id)) {
+							if (board_game[x + 1][y - 1] == -player_id) {
+								return Point(i - 5, j + 5);
+							}
+							if (board_game[x - 1][y + 1] == -player_id) {
+								return Point(i + 1, j - 1);
+							}
 							return Point(x, y);
 						}
 					}
 					else if (i + 1 < 30 && j - 1 > -1) {
 						if (unit == 4 && board_game[i + 1][j - 1] != -player_id) {
+							if (x - 1 == -1 || y + 1 == 50);
+							return Point(i + 1, j - 1);
 							return Point(x, y);
 						}
 					}
 					else if (i - 5 > -1 && j + 5 < 50) {
 						if (unit == 4 && board_game[i - 5][j + 5] != -player_id) {
+							if (x + 1 == 30 || y - 1 == -1)
+								return Point(i - 5, j + 5);
 							return Point(x, y);
 						}
 					}
@@ -580,14 +670,32 @@ Point defend(int board_game[][WIDTH], int player_id) {
 	}
 	return Point(-1, -1);
 }
-Point attack(int board_game[][WIDTH], int player_id) {
+Point attack_1(int board_game[][WIDTH], int player_id) {
 	long value_max = 0;
 	int x;
 	int y;
 	for (int m = 0; m < 30; m++) {
 		for (int n = 0; n < 50; n++) {
 			if (board_game[m][n] == 0) {
-				long v = value(board_game, player_id, m, n);
+				long v = value_1(board_game, player_id, m, n);
+				if (v > value_max) {
+					value_max = v;
+					x = m;
+					y = n;
+				}
+			}
+		}
+	}
+	return Point(x, y);
+}
+Point attack_2(int board_game[][WIDTH], int player_id) {
+	long value_max = 0;
+	int x;
+	int y;
+	for (int m = 0; m < 30; m++) {
+		for (int n = 0; n < 50; n++) {
+			if (board_game[m][n] == 0) {
+				long v = value_2(board_game, player_id, m, n);
 				if (v > value_max) {
 					value_max = v;
 					x = m;
@@ -610,7 +718,7 @@ Point player_rand(int board_game[][WIDTH], int player_id) {
 	return Point(row, col);
 }
 
-Point player_baseline(int board_game[][WIDTH], int player_id) {
+Point player_baseline_1(int board_game[][WIDTH], int player_id) {
 	if (board_game[15][25] == 0) {
 		return Point(15, 25);
 	}
@@ -628,7 +736,30 @@ Point player_baseline(int board_game[][WIDTH], int player_id) {
 			return p;
 		}
 		else {
-			return attack(board_game, player_id);
+			return attack_1(board_game, player_id);
+			//return player_rand(board_game, player_id);
+		}
+	}
+}
+Point player_baseline_2(int board_game[][WIDTH], int player_id) {
+	if (board_game[15][25] == 0) {
+		return Point(15, 25);
+	}
+	if (board_game[14][26] == 0) {
+		return Point(14, 26);
+	}
+	Point p = check_win(board_game, player_id);
+	if (p.x != -1 && p.y != -1) {
+		winner = player_id;
+		return p;
+	}
+	else {
+		p = defend(board_game, player_id);
+		if (p.x != -1 && p.y != -1) {
+			return p;
+		}
+		else {
+			return attack_2(board_game, player_id);
 			//return player_rand(board_game, player_id);
 		}
 	}

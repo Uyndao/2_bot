@@ -152,13 +152,13 @@ void draw_background() {
 
 Point player1_run() {
 	//return player_rand(board_game, 1);
-	return player_baseline(board_game, 1);
+	return player_baseline_1(board_game, 1);
 	//return Point(1, 0);
 }
 
 Point player2_run() {
 	//return player_rand(board_game, -1);
-	return player_baseline(board_game, -1);
+	return player_baseline_2(board_game, -1);
 	//return Point(2, 0);
 }
 
@@ -212,7 +212,8 @@ void play_game() {
 			turn_player1 = !turn_player1;
 
 			turn_limit--;
-			Sleep(PAUSE_TIME);
+			//Sleep(PAUSE_TIME);
+			Sleep(1500);
 		}
 	reset_game:
 		cin >> c;
