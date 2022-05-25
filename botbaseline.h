@@ -4,10 +4,10 @@
 #include <iostream>
 #include <stdlib.h>
 #include "config.h"
-const long atk_1_score[7] = { 0,3,21,192,1535,12288,98304 };
-const long def_1_score[7] = { 0,1,9,81,729,6561,59049 };
-const long atk_2_score[7] = { 0,1,9,81,729,6561,59049 };
-const long def_2_score[7] = { 0,3,18,162,1296,10368,82944 };
+const long atk_1_score[7] = { 0,60,300,1120,2990,20000,102000 };
+const long def_1_score[7] = { 0,40,240,540,2400,11000,50000 };
+const long atk_2_score[7] = { 0,3,20,180,1200,10000,80000 };
+const long def_2_score[7] = { 0,1,11,100,900,7000,65000 };
 void value_row(int board_game[][WIDTH], int player_id, int m, int n, int units[]) {
 	int value_max = 0;
 	int up = 1;
@@ -29,9 +29,6 @@ void value_row(int board_game[][WIDTH], int player_id, int m, int n, int units[]
 		if (n - 3 + i < 0)
 			i += (0 - (n - 3 + i));
 		int valuer = 0;
-		if ((n - 4 + i == -1 || board_game[m][n - 4 + i] == -player_id)) {
-			valuer--;
-		}
 		if (board_game[m][n - 3 + i] == player_id) {
 			valuer += 2;
 		}
@@ -53,9 +50,38 @@ void value_row(int board_game[][WIDTH], int player_id, int m, int n, int units[]
 		if (board_game[m][n - 1 + i] == -player_id) {
 			valuer = 0;
 		}
+		if ((n - 4 + i < 0 || board_game[m][n - 4 + i] == -player_id)) {
+			valuer--;
+		}
+		else if (n - 5 + i < 0 || board_game[m][n - 5 + i] == -player_id) {
+			if (board_game[m][n - 3 + i] == player_id) {
+				valuer--;
+			}
+		}
+		if (n - 4 + i > -1 && board_game[m][n - 4 + i] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
+		}
 		if ((n + 1 + i > 49 || board_game[m][n + 1 + i] == -player_id)) {
 			valuer--;
 			i += 4;
+		}
+		else if (n + 2 + i > 49 || board_game[m][n + 2 + i] == -player_id) {
+			if (board_game[m][n + i] == player_id) {
+				valuer--;
+			}
+		}
+		if (n + 1 + i < 50 && board_game[m][n + 1 + i] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
 		}
 		if (valuer > value_max) {
 			value_max = valuer;
@@ -85,9 +111,6 @@ void value_col(int board_game[][WIDTH], int player_id, int m, int n, int units[]
 		if (m - 3 + i < 0)
 			i += (0 - (m - 3 + i));
 		int valuer = 0;
-		if ((m - 4 + i == -1 || board_game[m - 4 + i][n] == -player_id)) {
-			valuer--;
-		}
 		if (board_game[m - 3 + i][n] == player_id) {
 			valuer += 2;
 		}
@@ -109,9 +132,38 @@ void value_col(int board_game[][WIDTH], int player_id, int m, int n, int units[]
 		if (board_game[m - 1 + i][n] == -player_id) {
 			valuer = 0;
 		}
+		if ((m - 4 + i < 0 || board_game[m - 4 + i][n] == -player_id)) {
+			valuer--;
+		}
+		else if (m - 5 + i < 0 || board_game[m - 5 + i][n] == -player_id) {
+			if (board_game[m - 3 + i][n] == player_id) {
+				valuer--;
+			}
+		}
+		if (m - 4 + i > -1 && board_game[m - 4 + i][n] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
+		}
 		if ((m + 1 + i > 29 || board_game[m + 1 + i][n] == -player_id)) {
 			valuer--;
 			i += 4;
+		}
+		else if (m + 2 + i > 29 || board_game[m + 2 + i][n] == -player_id) {
+			if (board_game[m + i][n] == player_id) {
+				valuer--;
+			}
+		}
+		if (m + 1 + i < 30 && board_game[m + 1 + i][n] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
 		}
 		if (valuer > value_max) {
 			value_max = valuer;
@@ -142,9 +194,6 @@ void value_cross_1(int board_game[][WIDTH], int player_id, int m, int n, int uni
 			i++;
 		}
 		int valuer = 0;
-		if ((m - 4 + i == -1 || n - 4 + i == -1 || board_game[m - 4 + i][n - 4 + i] == -player_id)) {
-			valuer--;
-		}
 		if (board_game[m - 3 + i][n - 3 + i] == player_id) {
 			valuer += 2;
 		}
@@ -166,9 +215,38 @@ void value_cross_1(int board_game[][WIDTH], int player_id, int m, int n, int uni
 		if (board_game[m - 1 + i][n - 1 + i] == -player_id) {
 			valuer = 0;
 		}
+		if ((m - 4 + i < 0 || n - 4 + i < 0 || board_game[m - 4 + i][n - 4 + i] == -player_id)) {
+			valuer--;
+		}
+		else if (m - 5 + i < 0 || n - 5 + i < 0 || board_game[m - 5 + i][n - 5 + i] == -player_id) {
+			if (board_game[m - 3 + i][n - 3 + i] == player_id) {
+				valuer--;
+			}
+		}
+		if (m - 4 + i > -1 && n - 4 + i > -1 && board_game[m - 4 + i][n - 4 + i] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
+		}
 		if ((m + 1 + i > 29 || n + 1 + i > 49 || board_game[m + 1 + i][n + 1 + i] == -player_id)) {
 			valuer--;
 			i += 4;
+		}
+		else if (m + 2 + i > 29 || n + 2 + i > 49 || board_game[m + 2 + i][n + 2 + i] == -player_id) {
+			if (board_game[m + i][n + i] == player_id) {
+				valuer--;
+			}
+		}
+		if (m + 1 + i < 30 && n + 1 + i < 50 && board_game[m + 1 + i][n + 1 + i] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
 		}
 		if (valuer > value_max) {
 			value_max = valuer;
@@ -199,9 +277,6 @@ void value_cross_2(int board_game[][WIDTH], int player_id, int m, int n, int uni
 			i++;
 		}
 		int valuer = 0;
-		if ((m + 4 - i == 30 || n - 4 + i == -1 || board_game[m + 4 - i][n - 4 + i] == -player_id)) {
-			valuer--;
-		}
 		if (board_game[m + 3 - i][n - 3 + i] == player_id) {
 			valuer += 2;
 		}
@@ -223,9 +298,38 @@ void value_cross_2(int board_game[][WIDTH], int player_id, int m, int n, int uni
 		if (board_game[m + 1 - i][n - 1 + i] == -player_id) {
 			valuer = 0;
 		}
+		if ((m + 4 - i > 29 || n - 4 + i < 0 || board_game[m + 4 - i][n - 4 + i] == -player_id)) {
+			valuer--;
+		}
+		else if (m + 5 - i > 29 || n - 5 + i < 0 || board_game[m + 5 - i][n - 5 + i] == -player_id) {
+			if (board_game[m + 3 - i][n - 3 + i] == player_id) {
+				valuer--;
+			}
+		}
+		if (m + 4 - i < 30 && n - 4 + i > -1 && board_game[m + 4 - i][n - 4 + i] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
+		}
 		if ((m - 1 - i < 0 || n + 1 + i>49 || board_game[m - 1 - i][n + 1 + i] == -player_id)) {
 			valuer--;
 			i += 4;
+		}
+		else if (m - 2 - i < 0 || n + 2 + i > 49 || board_game[m - 2 - i][n + 2 + i] == -player_id) {
+			if (board_game[m - i][n + i] == player_id) {
+				valuer--;
+			}
+		}
+		if (m - 1 - i > -1 && n + 1 + i < 50 && board_game[m - 1 - i][n + 1 + i] == player_id) {
+			if (valuer == 5) {
+				valuer += 2;
+			}
+			else if (valuer >= 2 && valuer < 7) {
+				valuer++;
+			}
 		}
 		if (valuer > value_max) {
 			value_max = valuer;

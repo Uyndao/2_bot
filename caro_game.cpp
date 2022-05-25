@@ -212,8 +212,8 @@ void play_game() {
 			turn_player1 = !turn_player1;
 
 			turn_limit--;
-			//Sleep(PAUSE_TIME);
-			Sleep(1500);
+			Sleep(PAUSE_TIME);
+			//Sleep(2000);
 		}
 	reset_game:
 		cin >> c;
